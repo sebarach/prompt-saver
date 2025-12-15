@@ -93,8 +93,13 @@ export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', cla
 };
 
 // Card
-export const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className = '' }) => (
-  <div className={`rounded-xl border border-border bg-card text-card-foreground shadow ${className}`}>
+type CardProps = React.HTMLAttributes<HTMLDivElement> & { className?: string };
+
+export const Card: React.FC<CardProps> = ({ children, className = '', ...props }) => (
+  <div
+    className={`rounded-xl border border-border bg-card text-card-foreground shadow ${className}`}
+    {...props}
+  >
     {children}
   </div>
 );

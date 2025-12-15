@@ -205,7 +205,11 @@ const DashboardContent = () => {
             <p className="text-muted-foreground text-sm max-w-sm mt-1 mb-6">
               {searchQuery ? 'No se encontraron resultados.' : 'Este contexto está vacío.'}
             </p>
-            <Button onClick={() => setIsModalOpen(true)} className="bg-white text-black hover:bg-zinc-200">
+            <Button 
+              variant="outline" 
+              onClick={() => setIsModalOpen(true)} 
+              className="bg-white !text-black hover:bg-zinc-200 border-white/40 shadow-lg shadow-black/20"
+            >
               <Plus className="mr-2 h-4 w-4" /> Crear Nuevo
             </Button>
           </div>
