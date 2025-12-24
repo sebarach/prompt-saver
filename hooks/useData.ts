@@ -75,9 +75,13 @@ export function useData() {
     }
   };
 
-  const addCategory = async (name: string) => {
+  const addCategory = async (name: string, colorKey?: string) => {
     try {
       await categoriesService.create(name);
+      if (colorKey) {
+        const { saveCustomColor } = await import('../lib/colors');
+        saveCustomColor(name, colorKey);
+      }
       if (!categories.includes(name)) {
         setCategories(prev => [...prev, name]);
       }

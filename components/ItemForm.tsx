@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Item, ItemType } from '../types';
 import { Button, Input, Textarea, Modal } from './ui';
-import { Terminal, MessageSquare, X, Check } from 'lucide-react';
+import { Terminal, MessageSquare, X, Check, Code2 } from 'lucide-react';
+import { getColorForCategory } from '../lib/colors';
 
 interface ItemFormProps {
   isOpen: boolean;
@@ -82,20 +83,27 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
       <form onSubmit={handleSubmit} className="space-y-4">
         
         {/* Type Selection */}
-        <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="grid grid-cols-3 gap-2 mb-4">
           <div 
-            className={`cursor-pointer rounded-lg border p-3 flex flex-col items-center justify-center gap-2 transition-all ${type === 'prompt' ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary' : 'border-border bg-muted/30 hover:bg-muted'}`}
+            className={`cursor-pointer rounded-lg border p-2 flex flex-col items-center justify-center gap-1.5 transition-all ${type === 'prompt' ? 'border-primary bg-primary/10 text-primary ring-1 ring-primary' : 'border-border bg-muted/30 hover:bg-muted'}`}
             onClick={() => setType('prompt')}
           >
-            <MessageSquare className="h-5 w-5" />
-            <span className="text-sm font-medium">Prompt AI</span>
+            <MessageSquare className="h-4 w-4" />
+            <span className="text-[11px] font-medium">Prompt AI</span>
           </div>
           <div 
-            className={`cursor-pointer rounded-lg border p-3 flex flex-col items-center justify-center gap-2 transition-all ${type === 'command' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500' : 'border-border bg-muted/30 hover:bg-muted'}`}
+            className={`cursor-pointer rounded-lg border p-2 flex flex-col items-center justify-center gap-1.5 transition-all ${type === 'command' ? 'border-emerald-500 bg-emerald-500/10 text-emerald-500 ring-1 ring-emerald-500' : 'border-border bg-muted/30 hover:bg-muted'}`}
             onClick={() => setType('command')}
           >
-            <Terminal className="h-5 w-5" />
-            <span className="text-sm font-medium">Comando CLI</span>
+            <Terminal className="h-4 w-4" />
+            <span className="text-[11px] font-medium">Comando CLI</span>
+          </div>
+          <div 
+            className={`cursor-pointer rounded-lg border p-2 flex flex-col items-center justify-center gap-1.5 transition-all ${type === 'snippet' ? 'border-amber-500 bg-amber-500/10 text-amber-500 ring-1 ring-amber-500' : 'border-border bg-muted/30 hover:bg-muted'}`}
+            onClick={() => setType('snippet')}
+          >
+            <Code2 className="h-4 w-4" />
+            <span className="text-[11px] font-medium">Snippet Código</span>
           </div>
         </div>
 
@@ -109,7 +117,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
                 onClick={() => setCategory(cat)}
                 className={`text-xs px-3 py-1 rounded-full border transition-all ${
                   category === cat 
-                  ? 'bg-white text-black border-white font-semibold' 
+                  ? `${getColorForCategory(cat).bg} ${getColorForCategory(cat).text} ${getColorForCategory(cat).border} font-bold ring-1 ${getColorForCategory(cat).ring}` 
                   : 'bg-transparent border-border text-muted-foreground hover:border-muted-foreground'
                 }`}
               >
@@ -128,7 +136,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-muted-foreground">Título</label>
           <Input 
-            placeholder={type === 'prompt' ? "Ej: Experto en Python" : "Ej: Desplegar Web App"}
+            placeholder={type === 'prompt' ? "Ej: Experto en Python" : type === 'command' ? "Ej: Desplegar Web App" : "Ej: Hook de React"}
             value={title}
             onChange={(e) => setTitle(e.target.value)}
             required
@@ -138,10 +146,10 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
 
         <div className="space-y-1.5">
             <label className="text-sm font-medium text-muted-foreground">
-                {type === 'prompt' ? 'Contenido del Prompt' : 'Código del Comando'}
+                {type === 'prompt' ? 'Contenido del Prompt' : type === 'command' ? 'Código del Comando' : 'Fragmento de Código'}
             </label>
             <Textarea 
-                placeholder={type === 'prompt' ? "Actúa como un..." : "docker build -t..."}
+                placeholder={type === 'prompt' ? "Actúa como un..." : type === 'command' ? "docker build -t..." : "const useLocalStorage = () => { ... }"}
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
@@ -187,7 +195,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
 
         <div className="flex justify-end gap-3 pt-4 border-t border-border mt-2">
             <Button type="button" variant="ghost" onClick={onClose}>Cancelar</Button>
-            <Button type="submit" className={type === 'command' ? 'bg-emerald-600 hover:bg-emerald-700 w-32' : 'w-32'}>
+            <Button type="submit" className={type === 'command' ? 'bg-emerald-600 hover:bg-emerald-700 w-32' : type === 'snippet' ? 'bg-amber-600 hover:bg-amber-700 w-32' : 'w-32'}>
                 {initialData ? 'Guardar' : 'Crear'}
             </Button>
         </div>

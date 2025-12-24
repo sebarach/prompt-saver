@@ -1,7 +1,8 @@
 import React from 'react';
 import { ViewMode } from '../types';
 import { Button } from './ui';
-import { LayoutDashboard, Terminal, MessageSquare, Plus, Layers, Cloud, Box, Hash, Code2 } from 'lucide-react';
+import { LayoutDashboard, Terminal, MessageSquare, Plus, Layers, Cloud, Box, Hash, Code2, ShieldAlert, Cpu, Globe } from 'lucide-react';
+import { getColorForCategory } from '../lib/colors';
 
 interface SidebarProps {
   currentView: ViewMode;
@@ -10,7 +11,7 @@ interface SidebarProps {
   onCategorySelect: (category: string | null) => void;
   onAddNew: () => void;
   onAddCategory: () => void;
-  itemCounts: { all: number; prompts: number; commands: number };
+  itemCounts: { all: number; prompts: number; commands: number; snippets: number };
   categories: { name: string; count: number }[];
 }
 
@@ -29,15 +30,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'all', label: 'Todo', icon: <LayoutDashboard className="mr-2 h-4 w-4" /> },
     { id: 'prompts', label: 'Prompts', icon: <MessageSquare className="mr-2 h-4 w-4" /> },
     { id: 'commands', label: 'Comandos', icon: <Terminal className="mr-2 h-4 w-4" /> },
+    { id: 'snippets', label: 'Snippets', icon: <Code2 className="mr-2 h-4 w-4" /> },
   ];
 
   // Helper to get icon for category
   const getCategoryIcon = (cat: string) => {
     const c = cat.toLowerCase();
-    if (c.includes('azure') || c.includes('aws') || c.includes('cloud')) return <Cloud className="mr-2 h-4 w-4 text-sky-400" />;
-    if (c.includes('npm') || c.includes('node') || c.includes('git')) return <Box className="mr-2 h-4 w-4 text-red-400" />;
-    if (c.includes('react') || c.includes('js') || c.includes('ts')) return <Code2 className="mr-2 h-4 w-4 text-blue-400" />;
-    return <Hash className="mr-2 h-4 w-4 text-muted-foreground" />;
+    const colorClass = getColorForCategory(cat).text;
+    
+    if (c.includes('azure') || c.includes('aws') || c.includes('cloud')) {
+        return <Cloud className={`mr-2 h-4 w-4 ${colorClass}`} />;
+    }
+    if (c.includes('npm') || c.includes('node') || c.includes('git')) {
+        return <Box className={`mr-2 h-4 w-4 ${colorClass}`} />;
+    }
+    if (c.includes('react') || c.includes('js') || c.includes('ts')) {
+        return <Code2 className={`mr-2 h-4 w-4 ${colorClass}`} />;
+    }
+    if (c.includes('secret') || c.includes('cred') || c.includes('pass') || c.includes('key')) {
+        return <ShieldAlert className={`mr-2 h-4 w-4 ${colorClass}`} />;
+    }
+    if (c.includes('python') || c.includes('ai') || c.includes('ml')) {
+        return <Cpu className={`mr-2 h-4 w-4 ${colorClass}`} />;
+    }
+    if (c.includes('api') || c.includes('web') || c.includes('http')) {
+        return <Globe className={`mr-2 h-4 w-4 ${colorClass}`} />;
+    }
+    return <Hash className={`mr-2 h-4 w-4 ${colorClass}`} />;
   };
 
   return (

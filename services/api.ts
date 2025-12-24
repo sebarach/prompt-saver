@@ -237,7 +237,7 @@ export const categoriesService = {
 function mapRowToItem(row: ItemRow): Item {
   return {
     id: row.id,
-    type: row.type as "prompt" | "command",
+    type: row.type as "prompt" | "command" | "snippet",
     category: row.category,
     title: row.title,
     content: row.content,

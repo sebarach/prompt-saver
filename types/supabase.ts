@@ -13,7 +13,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          type: 'prompt' | 'command'
+          type: 'prompt' | 'command' | 'snippet'
           category: string
           title: string
           content: string
@@ -24,7 +24,7 @@ export interface Database {
         Insert: {
           id?: string
           user_id?: string
-          type: 'prompt' | 'command'
+          type: 'prompt' | 'command' | 'snippet'
           category: string
           title: string
           content: string
@@ -35,7 +35,7 @@ export interface Database {
         Update: {
           id?: string
           user_id?: string
-          type?: 'prompt' | 'command'
+          type?: 'prompt' | 'command' | 'snippet'
           category?: string
           title?: string
           content?: string
@@ -54,7 +54,7 @@ export interface Database {
         Insert: {
           id?: number
           user_id?: string
-          name: string
+          name?: string
           created_at?: string
         }
         Update: {

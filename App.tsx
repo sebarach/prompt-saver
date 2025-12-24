@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { ViewMode } from './types';
 import { Sidebar } from './components/Sidebar';
 import { ItemCard } from './components/ItemCard';
@@ -19,6 +19,12 @@ const DashboardContent = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('all');
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [visibleCount, setVisibleCount] = useState(10);
+  
+  // Reset pagination when filters change
+  useEffect(() => {
+    setVisibleCount(10);
+  }, [viewMode, selectedCategory, searchQuery]);
   
   // Modals
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -37,6 +43,8 @@ const DashboardContent = () => {
             result = result.filter(i => i.type === 'prompt');
         } else if (viewMode === 'commands') {
             result = result.filter(i => i.type === 'command');
+        } else if (viewMode === 'snippets') {
+            result = result.filter(i => i.type === 'snippet');
         }
     }
 
@@ -57,6 +65,7 @@ const DashboardContent = () => {
     all: items.length,
     prompts: items.filter(i => i.type === 'prompt').length,
     commands: items.filter(i => i.type === 'command').length,
+    snippets: items.filter(i => i.type === 'snippet').length,
   }), [items]);
 
   const sidebarCategories = useMemo(() => {
@@ -145,7 +154,7 @@ const DashboardContent = () => {
                         <span className="text-foreground text-sm font-medium">{selectedCategory ? selectedCategory : viewMode}</span>
                     </div>
                     <h2 className="text-3xl font-bold tracking-tight text-white flex items-center gap-3">
-                        {selectedCategory ? `Contexto: ${selectedCategory}` : (viewMode === 'all' ? 'Vista General' : viewMode === 'prompts' ? 'Mis Prompts' : 'CLI Commands')}
+                        {selectedCategory ? `Contexto: ${selectedCategory}` : (viewMode === 'all' ? 'Vista General' : viewMode === 'prompts' ? 'Mis Prompts' : viewMode === 'commands' ? 'CLI Commands' : 'Snippets de Código')}
                         {dataLoading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
                     </h2>
                 </div>
@@ -214,16 +223,29 @@ const DashboardContent = () => {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
-            {filteredItems.map(item => (
-              <ItemCard 
-                key={item.id} 
-                item={item} 
-                onDelete={deleteItem}
-                onEdit={(i) => { setEditingItem(i); setIsModalOpen(true); }}
-                onCopy={handleCopy}
-              />
-            ))}
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+              {filteredItems.slice(0, visibleCount).map(item => (
+                <ItemCard 
+                  key={item.id} 
+                  item={item} 
+                  onDelete={deleteItem}
+                  onEdit={(i) => { setEditingItem(i); setIsModalOpen(true); }}
+                  onCopy={handleCopy}
+                />
+              ))}
+            </div>
+            
+            {filteredItems.length > visibleCount && (
+              <div className="flex justify-center pb-8">
+                <Button 
+                  onClick={() => setVisibleCount(prev => prev + 10)}
+                  className="bg-white/5 border border-white/10 hover:bg-white/10 text-white min-w-[200px]"
+                >
+                  Cargar más ({filteredItems.length - visibleCount} restantes)
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </main>

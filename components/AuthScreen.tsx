@@ -142,21 +142,21 @@ export const AuthScreen = () => {
               <button
                 type="button"
                 onClick={() => setAuthMode('login')}
-                className={`py-2 rounded-md transition ${authMode === 'login' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
+                className={`py-2 rounded-md transition ${authMode === 'login' ? 'bg-white text-black font-bold shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
               >
                 Ingresar
               </button>
               <button
                 type="button"
                 onClick={() => setAuthMode('signup')}
-                className={`py-2 rounded-md transition ${authMode === 'signup' ? 'bg-white text-black' : 'text-white/60 hover:text-white'}`}
+                className={`py-2 rounded-md transition ${authMode === 'signup' ? 'bg-white text-black font-bold shadow-lg' : 'text-white/70 hover:text-white hover:bg-white/5'}`}
               >
                 Crear Cuenta
               </button>
             </div>
           )}
 
-          <Button className="w-full bg-white text-black hover:bg-zinc-200 h-10 font-semibold" disabled={loading}>
+          <Button className="w-full bg-indigo-600 hover:bg-indigo-500 text-white h-11 font-bold shadow-indigo-500/20 shadow-lg border-none" disabled={loading}>
             {loading ? (
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             ) : authMode === 'signup' && supabaseReady ? (

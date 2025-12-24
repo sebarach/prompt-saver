@@ -1,4 +1,4 @@
-export type ItemType = 'prompt' | 'command';
+export type ItemType = 'prompt' | 'command' | 'snippet';
 
 export interface Item {
   id: string;
@@ -17,4 +17,4 @@ export interface FilterState {
   category: string | null;
 }
 
-export type ViewMode = 'all' | 'prompts' | 'commands';
+export type ViewMode = 'all' | 'prompts' | 'commands' | 'snippets';

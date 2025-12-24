@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Item } from '../types';
 import { Button, Card, CardContent, CardFooter, CardHeader } from './ui';
-import { Copy, Trash2, Edit, Check, Terminal, MessageSquare, Tag, X } from 'lucide-react';
+import { Copy, Trash2, Edit, Check, Terminal, MessageSquare, Tag, X, Code2, Eye, EyeOff } from 'lucide-react';
+import { getColorForCategory } from '../lib/colors';
 
 interface ItemCardProps {
   item: Item;
@@ -13,6 +14,9 @@ interface ItemCardProps {
 export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCopy }) => {
   const [copied, setCopied] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
+  
+  const isSecret = item.category?.toLowerCase().trim() === 'secrets';
+  const [isContentVisible, setIsContentVisible] = useState(!isSecret);
 
   const handleCopy = (event?: React.MouseEvent<HTMLButtonElement>) => {
     event?.stopPropagation();
@@ -22,6 +26,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
   };
 
   const isCommand = item.type === 'command';
+  const isSnippet = item.type === 'snippet';
   const openDetail = () => setIsDetailOpen(true);
   const closeDetail = () => setIsDetailOpen(false);
   const handleCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -31,10 +36,12 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
     }
   };
 
-  // Determine accent color based on type
-  const accentClass = isCommand ? 'text-emerald-400' : 'text-indigo-400';
-  const borderHoverClass = isCommand ? 'group-hover:border-emerald-500/30' : 'group-hover:border-indigo-500/30';
-  const focusOutlineClass = isCommand ? 'focus-visible:outline-emerald-500/60' : 'focus-visible:outline-indigo-500/60';
+  const catColor = getColorForCategory(item.category || 'General');
+
+  // Determine accent color based on category color mapping
+  const accentClass = catColor.text;
+  const borderHoverClass = `group-hover:${catColor.border}`;
+  const focusOutlineClass = `focus-visible:outline-${catColor.ring}/60`;
 
   return (
     <>
@@ -49,8 +56,8 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
           <div className="flex justify-between items-start gap-4">
             <div className="space-y-1.5 flex-1 min-w-0">
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
-                  <span className={`px-2 py-0.5 rounded-full bg-white/5 border border-white/5 flex items-center gap-1.5 ${accentClass}`}>
-                      {isCommand ? <Terminal className="h-3 w-3" /> : <MessageSquare className="h-3 w-3" />}
+                  <span className={`px-2 py-0.5 rounded-full ${catColor.bg} border ${catColor.border} flex items-center gap-1.5 ${catColor.text}`}>
+                      {item.type === 'command' ? <Terminal className="h-3 w-3" /> : item.type === 'snippet' ? <Code2 className="h-3 w-3" /> : <MessageSquare className="h-3 w-3" />}
                       {item.category || 'General'}
                   </span>
                   <span className="w-1 h-1 rounded-full bg-zinc-700" />
@@ -71,17 +78,36 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
           )}
           
           <div className="relative mt-2 group/code">
-            <div className={`rounded-lg p-3.5 text-sm font-mono text-xs overflow-x-auto whitespace-pre-wrap transition-colors ${
-              isCommand 
-                ? 'bg-black/80 border border-emerald-900/20 text-emerald-300 shadow-inner' 
-                : 'bg-zinc-950/80 border border-indigo-900/20 text-zinc-300 shadow-inner'
-            }`}>
-              {item.content}
+            <div className="relative group/content">
+              <div className={`rounded-lg p-3.5 text-sm font-mono text-xs overflow-y-auto max-h-[200px] whitespace-pre-wrap transition-all duration-300 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent bg-black/80 border ${catColor.border} ${catColor.text} shadow-inner ${!isContentVisible ? 'blur-md select-none opacity-50' : ''}`}>
+                {item.content}
+              </div>
+              {!isContentVisible && (
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => { e.stopPropagation(); setIsContentVisible(true); }}
+                    className="bg-black/40 hover:bg-black/60 border border-white/10 text-white gap-2 backdrop-blur-sm z-20"
+                  >
+                    <Eye className="h-4 w-4" /> Revelar
+                  </Button>
+                </div>
+              )}
+              {isSecret && isContentVisible && (
+                <button 
+                  onClick={(e) => { e.stopPropagation(); setIsContentVisible(false); }}
+                  className="absolute top-2 right-10 p-1.5 rounded-md bg-black/50 text-white/50 hover:text-white transition-colors opacity-0 group-hover/content:opacity-100 z-20"
+                  title="Ocultar"
+                >
+                  <EyeOff className="h-3.5 w-3.5" />
+                </button>
+              )}
             </div>
             <Button
               size="icon"
               variant="ghost"
-              className={`absolute top-2 right-2 h-7 w-7 rounded-md bg-zinc-800/80 backdrop-blur opacity-0 group-hover/code:opacity-100 transition-opacity hover:bg-white text-zinc-400 hover:text-black`}
+              className={`absolute top-2 right-2 h-7 w-7 rounded-md bg-zinc-800/80 backdrop-blur opacity-0 group-hover/code:opacity-100 transition-opacity hover:bg-white text-zinc-400 hover:text-black z-20`}
               onClick={handleCopy}
             >
               {copied ? <Check className="h-3.5 w-3.5 text-green-600" /> : <Copy className="h-3.5 w-3.5" />}
@@ -121,14 +147,14 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur"
           onClick={closeDetail}
         >
-          <div
-            className="relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-[#0b0b0f]/95 shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className={`pointer-events-none absolute inset-0 opacity-40 blur-3xl ${isCommand ? 'bg-emerald-500/20' : 'bg-indigo-500/20'}`} />
+            <div 
+              className={`relative w-full max-w-3xl overflow-hidden rounded-3xl border border-white/10 bg-[#0b0b0f]/95 shadow-2xl`}
+              onClick={(e) => e.stopPropagation()}
+            >
+            <div className={`pointer-events-none absolute inset-0 opacity-40 blur-3xl ${catColor.glow}`} />
             <div className="relative p-6 md:p-8 space-y-6">
               <button
-                className="absolute top-5 right-5 text-muted-foreground hover:text-white transition"
+                className="absolute top-5 right-5 text-muted-foreground hover:text-white transition z-30"
                 onClick={closeDetail}
                 aria-label="Cerrar"
               >
@@ -137,9 +163,9 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
 
               <div className="space-y-3 pr-8">
                 <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wider ${isCommand ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-200' : 'border-indigo-500/40 bg-indigo-500/10 text-indigo-200'}`}>
-                    {isCommand ? <Terminal className="h-3.5 w-3.5" /> : <MessageSquare className="h-3.5 w-3.5" />}
-                    {isCommand ? 'Comando CLI' : 'Prompt AI'}
+                  <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-[11px] font-semibold tracking-wider ${catColor.border} ${catColor.bg} ${catColor.text}`}>
+                    {item.type === 'command' ? <Terminal className="h-3.5 w-3.5" /> : item.type === 'snippet' ? <Code2 className="h-3.5 w-3.5" /> : <MessageSquare className="h-3.5 w-3.5" />}
+                    {item.type === 'command' ? 'Comando CLI' : item.type === 'snippet' ? 'Snippet Código' : 'Prompt AI'}
                   </span>
                   <span className="h-1 w-1 rounded-full bg-white/30" />
                   <span className="uppercase tracking-wide text-white/70 text-[11px]">{item.category || 'General'}</span>
@@ -154,27 +180,54 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
                 )}
               </div>
 
-              <div className={`relative rounded-2xl border ${isCommand ? 'border-emerald-500/20 bg-emerald-950/30' : 'border-indigo-500/20 bg-zinc-950/60'} p-5 shadow-[0_0_60px_rgba(0,0,0,0.45)]`}>
-                <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded-t-2xl" />
-                <pre className={`relative font-mono text-sm whitespace-pre-wrap leading-relaxed ${isCommand ? 'text-emerald-100' : 'text-zinc-100'}`}>
-                  {item.content}
-                </pre>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="mt-4 h-8 bg-white/10 text-white hover:bg-white/20"
-                  onClick={handleCopy}
-                >
-                  {copied ? (
-                    <>
-                      <Check className="mr-2 h-3.5 w-3.5 text-emerald-300" /> Copiado
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="mr-2 h-3.5 w-3.5" /> Copiar
-                    </>
+              <div className={`relative rounded-2xl border ${catColor.border} bg-black/40 p-5 shadow-[0_0_60px_rgba(0,0,0,0.45)] overflow-hidden`}>
+                <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded-t-2xl z-10" />
+                <div className={`max-h-[450px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent transition-all duration-500 ${!isContentVisible ? 'blur-2xl select-none opacity-20' : ''}`}>
+                  <pre className={`relative font-mono text-sm whitespace-pre-wrap leading-relaxed ${catColor.text}`}>
+                    {item.content}
+                  </pre>
+                </div>
+                
+                {!isContentVisible && (
+                  <div className="absolute inset-0 flex items-center justify-center z-20">
+                    <Button 
+                      onClick={() => setIsContentVisible(true)}
+                      className={`${catColor.bg} ${catColor.text} ${catColor.border} hover:scale-105 transition-transform gap-3 px-8 py-7 h-auto text-lg font-bold shadow-2xl ring-1 ${catColor.ring} backdrop-blur-md`}
+                    >
+                      <Eye className="h-6 w-6" /> Revelar Secreto
+                    </Button>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center mt-4 pt-4 border-t border-white/5">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 bg-white/10 text-white hover:bg-white/20"
+                    onClick={handleCopy}
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="mr-2 h-3.5 w-3.5 text-emerald-300" /> Copiado
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="mr-2 h-3.5 w-3.5" /> Copiar
+                      </>
+                    )}
+                  </Button>
+
+                  {isSecret && isContentVisible && (
+                    <Button 
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsContentVisible(false)}
+                      className="text-white/40 hover:text-white gap-2"
+                    >
+                      <EyeOff className="h-4 w-4" /> Ocultar
+                    </Button>
                   )}
-                </Button>
+                </div>
               </div>
 
               {item.tags.length > 0 && (
