@@ -17,20 +17,26 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
 }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
+  const [includeDeprecated, setIncludeDeprecated] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Filter items based on search query
   const filteredItems = useMemo(() => {
-    if (!query.trim()) return items.slice(0, 8);
+    let filtered = items;
+    if (!includeDeprecated) {
+      filtered = filtered.filter(item => !item.isDeprecated);
+    }
+
+    if (!query.trim()) return filtered.slice(0, 8);
     
     const q = query.toLowerCase();
-    return items.filter(item => 
+    return filtered.filter(item => 
       item.title.toLowerCase().includes(q) ||
       item.content.toLowerCase().includes(q) ||
       item.tags.some(tag => tag.toLowerCase().includes(q)) ||
       item.category.toLowerCase().includes(q)
     ).slice(0, 8);
-  }, [items, query]);
+  }, [items, query, includeDeprecated]);
 
   // Reset state when opening
   useEffect(() => {
@@ -114,6 +120,15 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
               placeholder="Buscar comandos, snippets o prompts..."
               className="flex-1 bg-transparent border-none outline-none text-white placeholder:text-muted-foreground text-base"
             />
+            <label className="flex items-center gap-2 cursor-pointer group mr-4">
+                <input 
+                    type="checkbox"
+                    checked={includeDeprecated}
+                    onChange={(e) => setIncludeDeprecated(e.target.checked)}
+                    className="w-3.5 h-3.5 rounded border-white/10 bg-white/5 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0 transition-all"
+                />
+                <span className="text-[10px] font-medium text-muted-foreground group-hover:text-white transition-colors uppercase tracking-wider"> Deprecados</span>
+            </label>
             <div className="hidden sm:flex items-center gap-1.5 mr-2">
                 <kbd className="px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono text-muted-foreground">Esc</kbd>
             </div>
@@ -147,7 +162,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       index === selectedIndex 
                         ? 'bg-white/10' 
                         : 'hover:bg-white/5'
-                    }`}
+                    } ${item.isDeprecated ? 'opacity-50 grayscale-[0.5]' : ''}`}
                   >
                     <div className={`mt-0.5 ${getTypeColor(item.type)}`}>
                       {getIcon(item.type)}
@@ -156,6 +171,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       <div className="flex items-center gap-2 mb-1">
                         <h3 className="text-white font-medium text-sm truncate">
                           {item.title}
+                          {item.isDeprecated && <span className="ml-2 text-[10px] text-amber-500/80 border border-amber-500/30 px-1 rounded uppercase tracking-tighter">Deprecado</span>}
                         </h3>
                         <span className={`text-xs px-1.5 py-0.5 rounded ${getTypeColor(item.type)} bg-white/5`}>
                           {item.type}

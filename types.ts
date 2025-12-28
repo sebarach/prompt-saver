@@ -8,6 +8,7 @@ export interface Item {
   content: string; // The prompt text or command code
   description?: string;
   tags: string[];
+  isDeprecated?: boolean;
   createdAt: number;
 }
 

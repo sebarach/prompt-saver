@@ -20,6 +20,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
   const [description, setDescription] = useState('');
   const [tagInput, setTagInput] = useState('');
   const [tags, setTags] = useState<string[]>([]);
+  const [isDeprecated, setIsDeprecated] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -29,6 +30,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
       setContent(initialData.content);
       setDescription(initialData.description || '');
       setTags(initialData.tags);
+      setIsDeprecated(initialData.isDeprecated || false);
     } else {
       resetForm();
     }
@@ -42,6 +44,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
     setDescription('');
     setTags([]);
     setTagInput('');
+    setIsDeprecated(false);
   };
 
   const handleAddTag = (e: React.KeyboardEvent) => {
@@ -66,7 +69,8 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
       title,
       content,
       description,
-      tags
+      tags,
+      isDeprecated
     });
     onClose();
   };
@@ -172,14 +176,28 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
             </div>
 
             <div className="space-y-1.5">
-            <label className="text-sm font-medium text-muted-foreground">Tags (Enter)</label>
-            <Input 
-                placeholder="react, fix..."
-                value={tagInput}
-                onChange={(e) => setTagInput(e.target.value)}
-                onKeyDown={handleAddTag}
-                className="bg-muted/30"
-            />
+                <label className="text-sm font-medium text-muted-foreground">Tags (Enter)</label>
+                <Input 
+                    placeholder="react, fix..."
+                    value={tagInput}
+                    onChange={(e) => setTagInput(e.target.value)}
+                    onKeyDown={handleAddTag}
+                    className="bg-muted/30"
+                />
+            </div>
+
+            <div className="space-y-1.5 flex flex-col justify-end pb-1">
+                <label className="flex items-center gap-2 cursor-pointer group">
+                    <input 
+                        type="checkbox"
+                        checked={isDeprecated}
+                        onChange={(e) => setIsDeprecated(e.target.checked)}
+                        className="w-4 h-4 rounded border-zinc-700 bg-zinc-900 text-indigo-500 focus:ring-indigo-500 focus:ring-offset-0 transition-all"
+                    />
+                    <span className="text-sm font-medium text-muted-foreground group-hover:text-white transition-colors">
+                        Marcar como deprecado
+                    </span>
+                </label>
             </div>
         </div>
         

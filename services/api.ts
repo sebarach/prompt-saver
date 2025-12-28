@@ -31,6 +31,7 @@ const localService = {
       createdAt: Date.now(),
       description: item.description || undefined,
       tags: item.tags || [],
+      isDeprecated: item.isDeprecated || false,
     };
     localStorage.setItem(
       STORAGE_KEY_ITEMS,
@@ -99,6 +100,7 @@ const remoteService = {
         content: item.content,
         description: item.description,
         tags: item.tags,
+        is_deprecated: item.isDeprecated || false,
       })
       .select()
       .single();
@@ -119,6 +121,7 @@ const remoteService = {
         content: updates.content,
         description: updates.description,
         tags: updates.tags,
+        is_deprecated: updates.isDeprecated,
       })
       .eq("id", id)
       .select()
@@ -243,6 +246,7 @@ function mapRowToItem(row: ItemRow): Item {
     content: row.content,
     description: row.description || undefined,
     tags: row.tags || [],
+    isDeprecated: (row as any).is_deprecated,
     createdAt: new Date(row.created_at).getTime(),
   };
 }
