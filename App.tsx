@@ -6,7 +6,7 @@ import { ItemForm } from './components/ItemForm';
 import { CategoryForm } from './components/CategoryForm';
 import { AuthScreen } from './components/AuthScreen';
 import { CommandPalette } from './components/CommandPalette';
-import { Button, Input } from './components/ui';
+import { Button, Input, Toaster, useToast, ConfirmModal, useConfirm } from './components/ui';
 import { Search, Plus, Menu, X, Filter, LogOut, Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useData } from './hooks/useData';
@@ -33,6 +33,8 @@ const DashboardContent = () => {
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isPaletteOpen, setIsPaletteOpen] = useState(false);
+  const { toasts, showToast, removeToast } = useToast();
+  const { confirmState, showConfirm, closeConfirm } = useConfirm();
 
   // Derived Data Logic
   const filteredItems = useMemo(() => {
@@ -259,9 +261,27 @@ const DashboardContent = () => {
                 <ItemCard 
                   key={item.id} 
                   item={item} 
-                  onDelete={deleteItem}
+                  onDelete={async (id) => {
+                    showConfirm({
+                      title: '¿Eliminar elemento?',
+                      message: 'Esta acción no se puede deshacer. El elemento se eliminará permanentemente.',
+                      confirmText: 'Eliminar',
+                      variant: 'destructive',
+                      onConfirm: async () => {
+                        try {
+                          await deleteItem(id);
+                          showToast('Elemento eliminado con éxito', 'success');
+                        } catch (e: any) {
+                          showToast(e.message || 'Error al eliminar elemento', 'error');
+                        }
+                      }
+                    });
+                  }}
                   onEdit={(i) => { setEditingItem(i); setIsModalOpen(true); }}
-                  onCopy={handleCopy}
+                  onCopy={(text) => {
+                    handleCopy(text);
+                    showToast('Copiado al portapapeles', 'info');
+                  }}
                 />
               ))}
             </div>
@@ -285,10 +305,16 @@ const DashboardContent = () => {
         isOpen={isModalOpen}
         onClose={() => { setIsModalOpen(false); setEditingItem(null); }}
         onSave={async (data) => {
-            if (editingItem) {
-                await updateItem(editingItem.id, data);
-            } else {
-                await addItem(data);
+            try {
+                if (editingItem) {
+                    await updateItem(editingItem.id, data);
+                    showToast('Elemento actualizado correctamente', 'success');
+                } else {
+                    await addItem(data);
+                    showToast('Elemento guardado con éxito', 'success');
+                }
+            } catch (e: any) {
+                showToast(e.message || 'Error al guardar elemento', 'error');
             }
         }}
         initialData={editingItem}
@@ -298,7 +324,14 @@ const DashboardContent = () => {
       <CategoryForm 
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
-        onSave={addCategory}
+        onSave={async (name) => {
+          try {
+            await addCategory(name);
+            showToast(`Categoría "${name}" creada con éxito`, 'success');
+          } catch (e: any) {
+            showToast(e.message || 'Error al crear categoría', 'error');
+          }
+        }}
       />
 
       <CommandPalette
@@ -310,6 +343,9 @@ const DashboardContent = () => {
           setIsModalOpen(true);
         }}
       />
+
+      <Toaster toasts={toasts} onRemove={removeToast} />
+      <ConfirmModal {...confirmState} onClose={closeConfirm} />
       
     </div>
   );
