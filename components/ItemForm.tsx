@@ -79,8 +79,11 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
       isOpen={isOpen}
       onClose={onClose}
       title={initialData ? 'Editar Elemento' : 'Nuevo Elemento'}
+      className="relative"
     >
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <div className={`pointer-events-none absolute -inset-20 opacity-20 blur-[100px] transition-all duration-1000 ${getColorForCategory(category).glow}`} />
+      
+      <form onSubmit={handleSubmit} className="relative space-y-5">
         
         {/* Type Selection */}
         <div className="grid grid-cols-3 gap-2 mb-4">
@@ -153,7 +156,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
-                className="font-mono text-xs min-h-[140px] bg-black/40 border-zinc-800 focus:border-indigo-500"
+                className={`font-mono text-xs min-h-[140px] bg-black/60 border-2 transition-all duration-300 ${getColorForCategory(category).border} ${getColorForCategory(category).text} focus:ring-2 ${getColorForCategory(category).ring} focus:border-transparent`}
             />
         </div>
 

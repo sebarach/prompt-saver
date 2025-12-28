@@ -5,6 +5,7 @@ import { ItemCard } from './components/ItemCard';
 import { ItemForm } from './components/ItemForm';
 import { CategoryForm } from './components/CategoryForm';
 import { AuthScreen } from './components/AuthScreen';
+import { CommandPalette } from './components/CommandPalette';
 import { Button, Input } from './components/ui';
 import { Search, Plus, Menu, X, Filter, LogOut, Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -31,6 +32,7 @@ const DashboardContent = () => {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<any | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isPaletteOpen, setIsPaletteOpen] = useState(false);
 
   // Derived Data Logic
   const filteredItems = useMemo(() => {
@@ -83,6 +85,19 @@ const DashboardContent = () => {
 
   // Handlers
   const handleCopy = (text: string) => navigator.clipboard.writeText(text);
+
+  // Command Palette Keyboard Shortcut (Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault();
+        setIsPaletteOpen(true);
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   if (authLoading) {
     return (
@@ -147,8 +162,8 @@ const DashboardContent = () => {
         
         {/* Top Bar */}
         <div className="flex flex-col gap-6 mb-8">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
+            <div className="flex items-center justify-between gap-4">
+                <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                         <span className="text-muted-foreground text-sm font-medium">Dashboard / </span>
                         <span className="text-foreground text-sm font-medium">{selectedCategory ? selectedCategory : viewMode}</span>
@@ -159,16 +174,31 @@ const DashboardContent = () => {
                     </h2>
                 </div>
 
-                <div className="flex items-center gap-3 w-full sm:w-auto">
-                    <div className="relative w-full sm:w-72 group">
-                        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground z-10" />
-                        <Input 
-                            placeholder="Buscar..." 
-                            className="pl-9 bg-black/50 border-white/10 focus:border-indigo-500/50 relative z-10 h-10 transition-all"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
-                    </div>
+                {/* Modern Centered Search Trigger */}
+                <div className="hidden lg:flex flex-1 justify-center max-w-md">
+                    <button
+                        onClick={() => setIsPaletteOpen(true)}
+                        className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-muted-foreground hover:bg-white/10 hover:border-white/20 transition-all backdrop-blur-md group shadow-xl shadow-black/20"
+                    >
+                        <Search className="h-4 w-4 transition-colors group-hover:text-indigo-400" />
+                        <span className="flex-1 text-left text-sm font-medium">Buscar comandos, prompts...</span>
+                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono group-hover:border-indigo-500/30">
+                            <span>⌘</span>
+                            <span>K</span>
+                        </div>
+                    </button>
+                </div>
+
+                <div className="flex items-center gap-3 justify-end flex-1">
+                    {/* Mobile/Small Screen Search Trigger */}
+                    <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="lg:hidden"
+                        onClick={() => setIsPaletteOpen(true)}
+                    >
+                        <Search className="h-4 w-4 text-muted-foreground" />
+                    </Button>
                     <Button variant="ghost" size="icon" onClick={signOut} title="Cerrar Sesión">
                         <LogOut className="h-4 w-4 text-muted-foreground hover:text-white" />
                     </Button>
@@ -269,6 +299,16 @@ const DashboardContent = () => {
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
         onSave={addCategory}
+      />
+
+      <CommandPalette
+        isOpen={isPaletteOpen}
+        onClose={() => setIsPaletteOpen(false)}
+        items={items}
+        onSelectItem={(item) => {
+          setEditingItem(item);
+          setIsModalOpen(true);
+        }}
       />
       
     </div>

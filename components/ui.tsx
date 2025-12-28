@@ -1,4 +1,5 @@
 import React, { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes } from 'react';
+import { X } from 'lucide-react';
 
 // Button
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -116,21 +117,22 @@ export const CardFooter: React.FC<{ children: React.ReactNode; className?: strin
   <div className={`flex items-center p-6 pt-0 ${className}`}>{children}</div>
 );
 
-// Dialog/Modal Base (Simplified)
 export const Modal: React.FC<{ 
   isOpen: boolean; 
   onClose: () => void; 
   title: string; 
-  children: React.ReactNode 
-}> = ({ isOpen, onClose, title, children }) => {
+  children: React.ReactNode;
+  className?: string;
+}> = ({ isOpen, onClose, title, children, className = '' }) => {
   if (!isOpen) return null;
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-      <div className="w-full max-w-lg rounded-xl border border-border bg-background p-6 shadow-lg animate-in fade-in zoom-in-95 duration-200">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-lg font-semibold">{title}</h2>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
+      <div className={`w-full max-w-lg rounded-2xl border border-white/10 bg-[#0a0a0b]/95 backdrop-blur-xl p-6 shadow-2xl shadow-black/50 animate-in zoom-in-95 duration-200 overflow-hidden relative ${className}`}>
+        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 opacity-50" />
+        <div className="flex justify-between items-center mb-6">
+          <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
+          <Button variant="ghost" size="icon" onClick={onClose} className="h-8 w-8 rounded-full hover:bg-white/10 transition-colors">
+            <X className="h-4 w-4 text-muted-foreground hover:text-white" />
           </Button>
         </div>
         {children}
