@@ -9,12 +9,37 @@ import { CommandPalette } from './components/CommandPalette';
 import { Button, Input, Toaster, useToast, ConfirmModal, useConfirm } from './components/ui';
 import { Search, Plus, Menu, X, Filter, LogOut, Loader2 } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { useData } from './hooks/useData';
+import { useItems, useCreateItem, useUpdateItem, useDeleteItem } from './hooks/useItems';
+import { useCategories, useCreateCategory } from './hooks/useCategories';
+import { saveCustomColor } from './lib/colors';
+
+// Default categories — always visible even if not in DB
+const DEFAULT_CATEGORIES = ['General', 'Azure', 'AWS', 'React', 'NPM', 'Docker', 'Git'];
 
 // Component wrapper to handle Auth Context consumption
 const DashboardContent = () => {
   const { user, loading: authLoading, signOut } = useAuth();
-  const { items, categories, loading: dataLoading, error, addItem, updateItem, deleteItem, addCategory } = useData();
+
+  // ─── TanStack Query hooks ────────────────────────────
+  const isAuthenticated = !!user;
+  const { data: items = [], isLoading: itemsLoading, error: itemsError } = useItems({ enabled: isAuthenticated });
+  const { data: dbCategories = [], isLoading: categoriesLoading, error: categoriesError } = useCategories({ enabled: isAuthenticated });
+  const createItem = useCreateItem();
+  const updateItem = useUpdateItem();
+  const deleteItem = useDeleteItem();
+  const createCategory = useCreateCategory();
+
+  // Merge default + DB + item categories (preserves legacy behavior from useData)
+  const categories = useMemo(() => {
+    return Array.from(new Set([
+      ...DEFAULT_CATEGORIES,
+      ...dbCategories,
+      ...items.map(i => i.category),
+    ]));
+  }, [dbCategories, items]);
+
+  const dataLoading = itemsLoading || categoriesLoading;
+  const error = itemsError?.message || categoriesError?.message || null;
   
   // UI State
   const [viewMode, setViewMode] = useState<ViewMode>('all');
@@ -269,7 +294,7 @@ const DashboardContent = () => {
                       variant: 'destructive',
                       onConfirm: async () => {
                         try {
-                          await deleteItem(id);
+                          await deleteItem.mutateAsync(id);
                           showToast('Elemento eliminado con éxito', 'success');
                         } catch (e: any) {
                           showToast(e.message || 'Error al eliminar elemento', 'error');
@@ -307,10 +332,10 @@ const DashboardContent = () => {
         onSave={async (data) => {
             try {
                 if (editingItem) {
-                    await updateItem(editingItem.id, data);
+                    await updateItem.mutateAsync({ id: editingItem.id, updates: data });
                     showToast('Elemento actualizado correctamente', 'success');
                 } else {
-                    await addItem(data);
+                    await createItem.mutateAsync(data);
                     showToast('Elemento guardado con éxito', 'success');
                 }
             } catch (e: any) {
@@ -324,9 +349,12 @@ const DashboardContent = () => {
       <CategoryForm 
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
-        onSave={async (name) => {
+        onSave={async (name, colorKey) => {
           try {
-            await addCategory(name);
+            await createCategory.mutateAsync(name);
+            if (colorKey) {
+              saveCustomColor(name, colorKey);
+            }
             showToast(`Categoría "${name}" creada con éxito`, 'success');
           } catch (e: any) {
             showToast(e.message || 'Error al crear categoría', 'error');
