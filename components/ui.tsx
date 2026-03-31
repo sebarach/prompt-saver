@@ -58,7 +58,7 @@ interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {}
 export const Textarea: React.FC<TextareaProps> = ({ className = '', ...props }) => {
   return (
     <textarea
-      className={`flex min-h-[80px] w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
+      className={`flex w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       {...props}
     />
   );
@@ -123,11 +123,13 @@ export const Modal: React.FC<{
   title: string; 
   children: React.ReactNode;
   className?: string;
-}> = ({ isOpen, onClose, title, children, className = '' }) => {
+  size?: 'sm' | 'md' | 'lg';
+}> = ({ isOpen, onClose, title, children, className = '', size = 'md' }) => {
   if (!isOpen) return null;
+  const sizeClass = size === 'lg' ? 'max-w-3xl' : size === 'sm' ? 'max-w-md' : 'max-w-lg';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className={`w-full max-w-lg rounded-2xl border border-white/10 bg-[#0a0a0b]/95 backdrop-blur-xl p-6 shadow-2xl shadow-black/50 animate-in zoom-in-95 duration-200 overflow-hidden relative ${className}`}>
+      <div className={`w-full ${sizeClass} max-h-[90vh] rounded-2xl border border-white/10 bg-[#0a0a0b]/95 backdrop-blur-xl p-6 md:p-8 shadow-2xl shadow-black/50 animate-in zoom-in-95 duration-200 overflow-y-auto relative ${className}`}>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 opacity-50" />
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
