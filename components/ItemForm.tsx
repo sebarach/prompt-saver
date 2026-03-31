@@ -161,7 +161,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
-                className={`font-mono text-xs min-h-[140px] bg-black/60 border-2 transition-all duration-300 ${getColorForCategory(category).border} ${getColorForCategory(category).text} focus:ring-2 ${getColorForCategory(category).ring} focus:border-transparent`}
+                className={`font-mono text-xs min-h-[350px] bg-black/60 border-2 transition-all duration-300 ${getColorForCategory(category).border} ${getColorForCategory(category).text} focus:ring-2 ${getColorForCategory(category).ring} focus:border-transparent`}
             />
         </div>
 
