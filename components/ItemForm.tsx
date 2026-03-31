@@ -84,6 +84,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
       onClose={onClose}
       title={initialData ? 'Editar Elemento' : 'Nuevo Elemento'}
       className="relative"
+      size="lg"
     >
       <div className={`pointer-events-none absolute -inset-20 opacity-20 blur-[100px] transition-all duration-1000 ${getColorForCategory(category).glow}`} />
       
