@@ -129,7 +129,7 @@ export const Modal: React.FC<{
   const sizeClass = size === 'lg' ? 'max-w-3xl' : size === 'sm' ? 'max-w-md' : 'max-w-lg';
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 animate-in fade-in duration-300">
-      <div className={`w-full ${sizeClass} rounded-2xl border border-white/10 bg-[#0a0a0b]/95 backdrop-blur-xl p-6 md:p-8 shadow-2xl shadow-black/50 animate-in zoom-in-95 duration-200 overflow-hidden relative ${className}`}>
+      <div className={`w-full ${sizeClass} max-h-[90vh] rounded-2xl border border-white/10 bg-[#0a0a0b]/95 backdrop-blur-xl p-6 md:p-8 shadow-2xl shadow-black/50 animate-in zoom-in-95 duration-200 overflow-y-auto relative ${className}`}>
         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-cyan-500 to-emerald-500 opacity-50" />
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white tracking-tight">{title}</h2>
