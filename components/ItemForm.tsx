@@ -145,7 +145,10 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 required
-                className={`font-mono text-xs h-[450px] bg-black/60 border-2 transition-all duration-300 ${getColorForCategory(category).border} ${getColorForCategory(category).text} focus:ring-2 ${getColorForCategory(category).ring} focus:border-transparent`}
+                autoResize
+                minHeight={120}
+                maxHeight={300}
+                className={`font-mono text-xs bg-black/60 border-2 transition-colors duration-300 ${getColorForCategory(category).border} ${getColorForCategory(category).text} focus:ring-2 ${getColorForCategory(category).ring} focus:border-transparent`}
             />
         </div>
 

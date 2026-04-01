@@ -1,4 +1,4 @@
-import React, { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, useState, useCallback } from 'react';
+import React, { ButtonHTMLAttributes, InputHTMLAttributes, TextareaHTMLAttributes, useState, useCallback, useRef, useEffect } from 'react';
 import { X, CheckCircle, AlertCircle, Info, TriangleAlert } from 'lucide-react';
 
 // Button
@@ -53,11 +53,61 @@ export const Input: React.FC<InputProps> = ({ className = '', ...props }) => {
 };
 
 // Textarea
-interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {}
+interface TextareaProps extends TextareaHTMLAttributes<HTMLTextAreaElement> {
+  /** Auto-resize to fit content between minHeight and maxHeight */
+  autoResize?: boolean;
+  /** Minimum height in pixels (default: 120) */
+  minHeight?: number;
+  /** Maximum height in pixels, scrolls after this (default: 300) */
+  maxHeight?: number;
+}
 
-export const Textarea: React.FC<TextareaProps> = ({ className = '', ...props }) => {
+export const Textarea: React.FC<TextareaProps> = ({
+  className = '',
+  autoResize = false,
+  minHeight = 120,
+  maxHeight = 300,
+  value,
+  onChange,
+  ...props
+}) => {
+  const ref = useRef<HTMLTextAreaElement>(null);
+
+  const adjustHeight = useCallback(() => {
+    const el = ref.current;
+    if (!el || !autoResize) return;
+    // Reset to min so scrollHeight recalculates correctly
+    el.style.height = `${minHeight}px`;
+    el.style.overflowY = 'hidden';
+    const scrollH = el.scrollHeight;
+    if (scrollH > maxHeight) {
+      el.style.height = `${maxHeight}px`;
+      el.style.overflowY = 'auto';
+    } else {
+      el.style.height = `${Math.max(scrollH, minHeight)}px`;
+    }
+  }, [autoResize, minHeight, maxHeight]);
+
+  // Adjust on value change (covers controlled components & initialData)
+  useEffect(() => {
+    adjustHeight();
+  }, [value, adjustHeight]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange?.(e);
+    adjustHeight();
+  };
+
+  const style: React.CSSProperties = autoResize
+    ? { minHeight: `${minHeight}px`, maxHeight: `${maxHeight}px`, resize: 'none' }
+    : {};
+
   return (
     <textarea
+      ref={ref}
+      value={value}
+      onChange={handleChange}
+      style={style}
       className={`flex w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-50 ${className}`}
       {...props}
     />
