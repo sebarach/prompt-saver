@@ -11,5 +11,14 @@ export default defineConfig({
     // GitHub Pages tiene una opción nativa para servir desde la carpeta /docs
     // lo que hace el despliegue mucho más fácil.
     outDir: 'docs',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Split ONNX Runtime / Transformers.js into separate chunk
+          // Only loaded when semantic search is activated
+          'onnx-runtime': ['@huggingface/transformers'],
+        },
+      },
+    },
   }
 })

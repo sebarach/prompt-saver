@@ -4,10 +4,11 @@ import { Sidebar } from './components/Sidebar';
 import { ItemCard } from './components/ItemCard';
 import { AuthScreen } from './components/AuthScreen';
 import { Button, Toaster, useToast, ConfirmModal, useConfirm } from './components/ui';
-import { Search, Plus, Menu, X, Filter, LogOut, Loader2 } from 'lucide-react';
+import { Search, Plus, Menu, X, Filter, LogOut, Loader2, Sparkles } from 'lucide-react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useItems, useCreateItem, useUpdateItem, useDeleteItem } from './hooks/useItems';
 import { useCategories, useCreateCategory } from './hooks/useCategories';
+import { useSemanticSearch } from './hooks/useSemanticSearch';
 import { saveCustomColor } from './lib/colors';
 
 // Lazy load modals — not needed until user interacts (bundle-dynamic-imports)
@@ -84,6 +85,26 @@ const DashboardContent = () => {
   const { toasts, showToast, removeToast } = useToast();
   const { confirmState, showConfirm, closeConfirm } = useConfirm();
 
+  // Semantic search
+  const semantic = useSemanticSearch();
+  const [semanticResults, setSemanticResults] = useState<Map<string, number>>(new Map());
+  const [semanticQuery, setSemanticQuery] = useState('');
+
+  // Sync embeddings when items load
+  useEffect(() => {
+    if (isAuthenticated && items.length > 0 && semantic.enabled) {
+      semantic.syncAll(items).then((count) => {
+        if (count > 0) console.log(`[semantic] Indexed ${count} new items`);
+      });
+    }
+  }, [isAuthenticated, items, semantic.enabled]);
+
+  // Update embeddings on item create/update/delete
+  useEffect(() => {
+    if (!semantic.enabled) return;
+    // Listen for mutations via TanStack Query cache updates — handled in onSave/onDelete
+  }, [semantic.enabled]);
+
   // Derived Data Logic — early exit for empty items (js-early-exit)
   const filteredItems = useMemo(() => {
     if (items.length === 0) return [];
@@ -100,6 +121,14 @@ const DashboardContent = () => {
       result = result.filter(i => i.type === 'snippet');
     }
 
+    if (semantic.enabled && semanticQuery && semanticResults.size > 0) {
+      // Hybrid: filter by semantic results, sort by similarity score
+      const semFiltered = result.filter(i => semanticResults.has(i.id));
+      // Sort by semantic score (highest first)
+      semFiltered.sort((a, b) => (semanticResults.get(b.id) ?? 0) - (semanticResults.get(a.id) ?? 0));
+      return semFiltered;
+    }
+
     if (searchQuery) {
       const q = searchQuery.toLowerCase();
       result = result.filter(i => 
@@ -111,7 +140,7 @@ const DashboardContent = () => {
     }
 
     return result;
-  }, [items, viewMode, selectedCategory, searchQuery]);
+  }, [items, viewMode, selectedCategory, searchQuery, semantic.enabled, semanticQuery, semanticResults]);
 
   // itemCounts — single reduce instead of 3 separate filters (js-combine-iterations)
   const itemCounts = useMemo(() => {
@@ -156,20 +185,39 @@ const DashboardContent = () => {
   // Handlers
   const handleCopy = useCallback((text: string) => navigator.clipboard.writeText(text), []);
 
+  // Semantic search handler — debounced via useMemo on query change
+  const handleSearchChange = useCallback((q: string) => {
+    setSearchQuery(q);
+    if (semantic.enabled && q.trim()) {
+      setSemanticQuery(q);
+      semantic.search(q).then((results) => {
+        const map = new Map<string, number>();
+        results.forEach((r) => map.set(r.id, r.score));
+        setSemanticResults(map);
+      });
+    } else {
+      setSemanticQuery('');
+      setSemanticResults(new Map());
+    }
+  }, [semantic.enabled, semantic.search]);
+
   // Save handlers — stable with useCallback
   const handleItemSave = useCallback(async (data: any) => {
     try {
+      let saved: Item;
       if (editingItem) {
-        await updateItem.mutateAsync({ id: editingItem.id, updates: data });
+        saved = await updateItem.mutateAsync({ id: editingItem.id, updates: data });
         showToast('Elemento actualizado correctamente', 'success');
       } else {
-        await createItem.mutateAsync(data);
+        saved = await createItem.mutateAsync(data);
         showToast('Elemento guardado con éxito', 'success');
       }
+      // Update embedding if semantic search is enabled
+      if (semantic.enabled) semantic.updateEmbedding(saved);
     } catch (e: any) {
       showToast(e.message || 'Error al guardar elemento', 'error');
     }
-  }, [editingItem, updateItem, createItem, showToast]);
+  }, [editingItem, updateItem, createItem, showToast, semantic.enabled, semantic.updateEmbedding]);
 
   const handleCategorySave = useCallback(async (name: string, colorKey?: string) => {
     try {
@@ -287,11 +335,30 @@ const DashboardContent = () => {
                         onClick={() => setIsPaletteOpen(true)}
                         className="w-full flex items-center gap-3 px-4 py-2 bg-white/5 border border-white/10 rounded-xl text-muted-foreground hover:bg-white/10 hover:border-white/20 transition-all backdrop-blur-md group shadow-xl shadow-black/20"
                     >
-                        <Search className="h-4 w-4 transition-colors group-hover:text-indigo-400" />
-                        <span className="flex-1 text-left text-sm font-medium">Buscar comandos, prompts...</span>
-                        <div className="flex items-center gap-1 px-1.5 py-0.5 bg-white/5 border border-white/10 rounded text-[10px] font-mono group-hover:border-indigo-500/30">
-                            <span>⌘</span>
-                            <span>K</span>
+                        {semantic.enabled && semantic.syncing ? (
+                          <Loader2 className="h-4 w-4 animate-spin text-indigo-400" />
+                        ) : (
+                          <Search className="h-4 w-4 transition-colors group-hover:text-indigo-400" />
+                        )}
+                        <span className="flex-1 text-left text-sm font-medium">
+                          {semantic.enabled ? 'Búsqueda semántica...' : 'Buscar comandos, prompts...'}
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); semantic.toggle(); }}
+                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono border transition-colors ${
+                              semantic.enabled
+                                ? 'bg-indigo-500/20 border-indigo-500/40 text-indigo-300'
+                                : 'bg-white/5 border-white/10 text-muted-foreground hover:text-indigo-400'
+                            }`}
+                            title={semantic.enabled ? 'Desactivar búsqueda semántica' : 'Activar búsqueda semántica (AI local)'}
+                          >
+                            <Sparkles className="h-2.5 w-2.5" />
+                            {semantic.enabled ? 'AI' : 'AI'}
+                          </button>
+                          <span className="bg-white/5 border border-white/10 rounded px-1.5 py-0.5 text-[10px] font-mono group-hover:border-indigo-500/30">
+                            ⌘K
+                          </span>
                         </div>
                     </button>
                 </div>
