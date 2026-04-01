@@ -3,6 +3,7 @@ import { Item, ItemType } from '../types';
 import { Button, Input, Textarea, Modal } from './ui';
 import { Terminal, MessageSquare, X, Check, Code2 } from 'lucide-react';
 import { getColorForCategory } from '../lib/colors';
+import { CategoryCombobox } from './CategoryCombobox';
 
 interface ItemFormProps {
   isOpen: boolean;
@@ -117,27 +118,10 @@ export const ItemForm: React.FC<ItemFormProps> = ({ isOpen, onClose, onSave, ini
 
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-muted-foreground">Contexto / Categoría</label>
-          <div className="flex flex-wrap gap-2 mb-2 max-h-24 overflow-y-auto pr-1">
-            {displayCategories.map(cat => (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setCategory(cat)}
-                className={`text-xs px-3 py-1 rounded-full border transition-all ${
-                  category === cat 
-                  ? `${getColorForCategory(cat).bg} ${getColorForCategory(cat).text} ${getColorForCategory(cat).border} font-bold ring-1 ${getColorForCategory(cat).ring}` 
-                  : 'bg-transparent border-border text-muted-foreground hover:border-muted-foreground'
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
-          </div>
-          <Input 
-            placeholder="O escribe una nueva..."
+          <CategoryCombobox
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="bg-muted/30"
+            onChange={setCategory}
+            categories={displayCategories}
           />
         </div>
 

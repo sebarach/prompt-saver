@@ -1,0 +1,26 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "context7": {
+      "type": "remote",
+      "url": "https://mcp.context7.com/mcp",
+      "headers": {
+        "CONTEXT7_API_KEY": "ctx7sk-0569325d-4aa7-4fce-9df5-3e65dbe12061"
+      }
+    },
+    "Neon": {
+      "type": "remote",
+      "url": "https://mcp.neon.tech/mcp",
+      "headers": {
+        "Authorization": "Bearer napi_s9lxgezt5b9zlce0zm1q1dbylqjr4q57im7i8evg3gll0yz48hisx0h3y1ad17cm"
+      }
+    },
+    "Supabase": {
+      "type": "remote",
+      "url": "https://mcp.supabase.com/mcp?project/ncknlimqqqgicbcoerxi",
+      "headers": {
+        "Authorization": "Bearer sbp_eb48667e74d390d97e221c455bed793a1bb3194d"
+      }
+    }
+  }
+}

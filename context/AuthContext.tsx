@@ -7,7 +7,6 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   signOut: () => Promise<void>;
-  loginWithDemo: (email: string) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -22,17 +21,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     async function initSession() {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        // Ignoramos error en init para permitir modo offline si falla la conexión
-        
-        if (mounted) {
-           if (session) {
-             setSession(session);
-             setUser(session.user);
-           }
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (mounted && session) {
+          setSession(session);
+          setUser(session.user);
         }
       } catch (error) {
-        console.warn('Supabase Auth check failed, app will stay in logged out state until demo login:', error);
+        console.error('Supabase Auth init failed:', error);
       } finally {
         if (mounted) {
           setLoading(false);
@@ -57,38 +53,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const signOut = async () => {
-    // Si es usuario demo (fake), solo limpiamos el estado
-    if (user?.id === 'demo-user-id') {
-        setUser(null);
-        setSession(null);
-        return;
-    }
     await supabase.auth.signOut();
   };
 
-  const loginWithDemo = (email: string) => {
-    const fakeUser: User = {
-        id: 'demo-user-id',
-        app_metadata: {},
-        user_metadata: {},
-        aud: 'authenticated',
-        created_at: new Date().toISOString(),
-        email: email,
-        phone: ''
-    };
-    const fakeSession: Session = {
-        access_token: 'demo-token',
-        refresh_token: 'demo-refresh',
-        expires_in: 3600,
-        token_type: 'bearer',
-        user: fakeUser
-    };
-    setUser(fakeUser);
-    setSession(fakeSession);
-  };
-
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut, loginWithDemo }}>
+    <AuthContext.Provider value={{ user, session, loading, signOut }}>
       {children}
     </AuthContext.Provider>
   );

@@ -182,7 +182,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
 
               <div className={`relative rounded-2xl border ${catColor.border} bg-black/40 p-5 shadow-[0_0_60px_rgba(0,0,0,0.45)] overflow-hidden`}>
                 <div className="absolute inset-x-0 top-0 h-12 bg-gradient-to-b from-white/5 to-transparent pointer-events-none rounded-t-2xl z-10" />
-                <div className={`max-h-[450px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent transition-all duration-500 ${!isContentVisible ? 'blur-2xl select-none opacity-20' : ''}`}>
+                <div className={`max-h-[300px] overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent transition-all duration-500 ${!isContentVisible ? 'blur-2xl select-none opacity-20' : ''}`}>
                   <pre className={`relative font-mono text-sm whitespace-pre-wrap leading-relaxed ${catColor.text}`}>
                     {item.content}
                   </pre>
