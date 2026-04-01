@@ -151,9 +151,14 @@ const DashboardContent = () => {
       {/* Mobile Header */}
       <div className="md:hidden flex items-center justify-between p-4 border-b border-border bg-card relative z-10">
         <h1 className="font-bold text-lg bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">DevVault</h1>
-        <Button size="icon" variant="ghost" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-          {mobileMenuOpen ? <X /> : <Menu />}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button size="icon" variant="ghost" className="text-white" onClick={() => setIsModalOpen(true)}>
+            <Plus className="h-5 w-5" />
+          </Button>
+          <Button size="icon" variant="ghost" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
+            {mobileMenuOpen ? <X /> : <Menu />}
+          </Button>
+        </div>
       </div>
 
       {/* Sidebar Overlay Mobile */}
