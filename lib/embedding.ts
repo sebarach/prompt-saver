@@ -4,20 +4,21 @@
  * Runs entirely in the browser (WebGPU / WASM fallback)
  */
 
-import { pipeline, Pipeline, env } from '@huggingface/transformers';
+import { pipeline, env } from '@huggingface/transformers';
+import type { FeatureExtractionPipeline } from '@huggingface/transformers';
 
 // Skip local model check — download from HuggingFace Hub
 env.allowLocalModels = false;
 
 // Singleton pipeline instance
-let embedder: Pipeline | null = null;
-let loadingPromise: Promise<Pipeline> | null = null;
+let embedder: FeatureExtractionPipeline | null = null;
+let loadingPromise: Promise<FeatureExtractionPipeline> | null = null;
 
 /**
  * Initialize the feature-extraction pipeline.
  * Downloads model on first call (~30MB), cached by browser thereafter.
  */
-export async function getEmbedder(): Promise<Pipeline> {
+export async function getEmbedder(): Promise<FeatureExtractionPipeline> {
   if (embedder) return embedder;
 
   if (loadingPromise) return loadingPromise;
@@ -28,7 +29,7 @@ export async function getEmbedder(): Promise<Pipeline> {
         console.log(`[embedding] Download: ${Math.round(progress.progress)}%`);
       }
     },
-  });
+  }) as Promise<FeatureExtractionPipeline>;
 
   embedder = await loadingPromise;
   return embedder;

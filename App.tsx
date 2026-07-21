@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect, useCallback, Suspense, lazy } from 'react';
-import { ViewMode } from './types';
+import { ViewMode, Item } from './types';
 import { Sidebar } from './components/Sidebar';
 import { ItemCard } from './components/ItemCard';
 import { AuthScreen } from './components/AuthScreen';
@@ -10,6 +10,7 @@ import { useItems, useCreateItem, useUpdateItem, useDeleteItem } from './hooks/u
 import { useCategories, useCreateCategory } from './hooks/useCategories';
 import { useSemanticSearch } from './hooks/useSemanticSearch';
 import { saveCustomColor } from './lib/colors';
+import type { Category } from './types';
 
 // Lazy load modals — not needed until user interacts (bundle-dynamic-imports)
 const ItemForm = lazy(() => import('./components/ItemForm').then(m => ({ default: m.ItemForm })));
@@ -40,12 +41,17 @@ const DashboardContent = () => {
   const createCategory = useCreateCategory();
 
   // Merge default + DB + item categories (preserves legacy behavior from useData)
-  const categories = useMemo(() => {
-    return Array.from(new Set([
-      ...DEFAULT_CATEGORIES,
-      ...dbCategories,
-      ...items.map(i => i.category),
-    ]));
+  // Build a deduplicated Category[] (id = name for default/legacy entries without an id).
+  const categories = useMemo<Category[]>(() => {
+    const byName = new Map<string, Category>();
+    const add = (name: string, id?: string) => {
+      const key = name.toLowerCase();
+      if (!byName.has(key)) byName.set(key, { id: id ?? name, name });
+    };
+    DEFAULT_CATEGORIES.forEach((name) => add(name));
+    dbCategories.forEach((c) => add(c.name, c.id));
+    items.forEach((i) => add(i.categoryName || 'General'));
+    return Array.from(byName.values());
   }, [dbCategories, items]);
 
   const dataLoading = itemsLoading || categoriesLoading;
@@ -112,7 +118,7 @@ const DashboardContent = () => {
     let result = items;
 
     if (selectedCategory) {
-      result = result.filter(i => i.category === selectedCategory);
+      result = result.filter(i => i.categoryName === selectedCategory);
     } else if (viewMode === 'prompts') {
       result = result.filter(i => i.type === 'prompt');
     } else if (viewMode === 'commands') {
@@ -134,7 +140,7 @@ const DashboardContent = () => {
       result = result.filter(i => 
         i.title.toLowerCase().includes(q) || 
         i.tags.some(t => t.toLowerCase().includes(q)) ||
-        i.category.toLowerCase().includes(q) ||
+        i.categoryName.toLowerCase().includes(q) ||
         i.content.toLowerCase().includes(q)
       );
     }
@@ -155,9 +161,9 @@ const DashboardContent = () => {
 
   const sidebarCategories = useMemo(() => {
     const counts: Record<string, number> = {};
-    categories.forEach(cat => { counts[cat] = 0; });
+    categories.forEach(cat => { counts[cat.name] = 0; });
     for (const item of items) {
-      const cat = item.category || 'General';
+      const cat = item.categoryName || 'General';
       counts[cat] = (counts[cat] || 0) + 1;
     }
 
@@ -180,7 +186,7 @@ const DashboardContent = () => {
   const handleCloseModal = useCallback(() => { setIsModalOpen(false); setEditingItem(null); }, []);
   const handleCloseCategoryModal = useCallback(() => setIsCategoryModalOpen(false), []);
   const handleClosePalette = useCallback(() => setIsPaletteOpen(false), []);
-  const handleSelectPaletteItem = useCallback((item: any) => { setEditingItem(item); setIsModalOpen(true); }, []);
+  const handleSelectPaletteItem = useCallback((item: Item) => { setEditingItem(item); setIsModalOpen(true); }, []);
 
   // Handlers
   const handleCopy = useCallback((text: string) => navigator.clipboard.writeText(text), []);
@@ -202,7 +208,7 @@ const DashboardContent = () => {
   }, [semantic.enabled, semantic.search]);
 
   // Save handlers — stable with useCallback
-  const handleItemSave = useCallback(async (data: any) => {
+  const handleItemSave = useCallback(async (data: Omit<Item, 'id' | 'createdAt' | 'categoryName'>) => {
     try {
       let saved: Item;
       if (editingItem) {

@@ -1,15 +1,17 @@
 import { supabase } from '../lib/supabase';
-import { Item } from '../types';
-import { Database } from '../types/supabase';
+import type { Item, Category } from '../types';
+import type { Database } from '../types';
 
-type ItemRow = Database['public']['Tables']['items']['Row'];
+type ItemRow = Database['public']['Functions']['get_items']['Returns'] extends infer T
+  ? T extends Array<infer U> ? U : never
+  : never;
 
-// ─── Row → Domain mapper ────────────────────────────────
 function mapRowToItem(row: ItemRow): Item {
   return {
     id: row.id,
     type: row.type as Item['type'],
-    category: row.category,
+    categoryId: row.category_id,
+    categoryName: row.category_name ?? '',
     title: row.title,
     content: row.content,
     description: row.description || undefined,
@@ -19,7 +21,6 @@ function mapRowToItem(row: ItemRow): Item {
   };
 }
 
-// ─── Service (RPC only) ─────────────────────────────────
 export const itemsService = {
   async getAll(): Promise<Item[]> {
     const { data, error } = await supabase.rpc('get_items');
@@ -27,31 +28,31 @@ export const itemsService = {
     return (data as ItemRow[]).map(mapRowToItem);
   },
 
-  async create(item: Omit<Item, 'id' | 'createdAt'>): Promise<Item> {
+  async create(item: Omit<Item, 'id' | 'createdAt' | 'categoryName'>): Promise<Item> {
     const { data, error } = await supabase.rpc('create_item', {
       p_type: item.type,
       p_title: item.title,
       p_content: item.content,
       p_description: item.description ?? '',
-      p_category: item.category,
+      p_category_id: item.categoryId,
       p_tags: item.tags ?? [],
     });
     if (error) throw error;
-    return mapRowToItem(data as ItemRow);
+    return mapRowToItem((data as ItemRow[])[0]);
   },
 
-  async update(id: string, updates: Partial<Omit<Item, 'id' | 'createdAt'>>): Promise<Item> {
+  async update(id: string, updates: Partial<Omit<Item, 'id' | 'createdAt' | 'categoryName'>>): Promise<Item> {
     const { data, error } = await supabase.rpc('update_item', {
       p_id: id,
       p_title: updates.title,
       p_content: updates.content,
       p_description: updates.description,
-      p_category: updates.category,
+      p_category_id: updates.categoryId,
       p_tags: updates.tags,
       p_is_deprecated: updates.isDeprecated,
     });
     if (error) throw error;
-    return mapRowToItem(data as ItemRow);
+    return mapRowToItem((data as ItemRow[])[0]);
   },
 
   async delete(id: string): Promise<void> {
@@ -59,3 +60,5 @@ export const itemsService = {
     if (error) throw error;
   },
 };
+
+export { Category };

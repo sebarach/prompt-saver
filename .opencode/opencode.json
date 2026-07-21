@@ -15,11 +15,12 @@
         "Authorization": "Bearer napi_s9lxgezt5b9zlce0zm1q1dbylqjr4q57im7i8evg3gll0yz48hisx0h3y1ad17cm"
       }
     },
-    "Supabase": {
+    "supabase": {
       "type": "remote",
-      "url": "https://mcp.supabase.com/mcp?project/ncknlimqqqgicbcoerxi",
+      "url": "https://mcp.supabase.com/mcp",
+      "oauth": false,
       "headers": {
-        "Authorization": "Bearer sbp_eb48667e74d390d97e221c455bed793a1bb3194d"
+        "Authorization": "Bearer {env:SUPABASE_ACCESS_TOKEN}"
       }
     }
   }

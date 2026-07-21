@@ -1,4 +1,4 @@
-export type Json =
+﻿export type Json =
   | string
   | number
   | boolean
@@ -8,6 +8,7 @@ export type Json =
 
 export type Database = {
   // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "13.0.5"
   }
@@ -16,19 +17,19 @@ export type Database = {
       categories: {
         Row: {
           created_at: string
-          id: number
+          id: string
           name: string
           user_id: string
         }
         Insert: {
           created_at?: string
-          id?: number
+          id?: string
           name: string
           user_id: string
         }
         Update: {
           created_at?: string
-          id?: number
+          id?: string
           name?: string
           user_id?: string
         }
@@ -36,7 +37,7 @@ export type Database = {
       }
       items: {
         Row: {
-          category: string
+          category_id: string
           content: string
           created_at: string
           description: string | null
@@ -48,7 +49,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          category: string
+          category_id: string
           content: string
           created_at?: string
           description?: string | null
@@ -60,7 +61,7 @@ export type Database = {
           user_id: string
         }
         Update: {
-          category?: string
+          category_id?: string
           content?: string
           created_at?: string
           description?: string | null
@@ -71,56 +72,98 @@ export type Database = {
           type?: Database["public"]["Enums"]["items_type"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      // Will be populated after RPC functions are created
-      get_items: {
-        Args: Record<string, never>
-        Returns: Database["public"]["Tables"]["items"]["Row"][]
+      create_category: {
+        Args: { p_name: string }
+        Returns: {
+          id: string
+          name: string
+        }[]
       }
       create_item: {
         Args: {
-          p_type: Database["public"]["Enums"]["items_type"]
-          p_title: string
+          p_category_id: string
           p_content: string
-          p_description?: string
-          p_category: string
-          p_tags?: string[]
+          p_description: string
+          p_tags: string[]
+          p_title: string
+          p_type: Database["public"]["Enums"]["items_type"]
         }
-        Returns: Database["public"]["Tables"]["items"]["Row"]
+        Returns: {
+          category_id: string
+          category_name: string
+          content: string
+          created_at: string
+          description: string
+          id: string
+          is_deprecated: boolean
+          tags: string[]
+          title: string
+          type: Database["public"]["Enums"]["items_type"]
+          user_id: string
+        }[]
+      }
+      delete_item: { Args: { p_id: string }; Returns: undefined }
+      get_categories: {
+        Args: never
+        Returns: {
+          id: string
+          name: string
+        }[]
+      }
+      get_items: {
+        Args: never
+        Returns: {
+          category_id: string
+          category_name: string
+          content: string
+          created_at: string
+          description: string
+          id: string
+          is_deprecated: boolean
+          tags: string[]
+          title: string
+          type: Database["public"]["Enums"]["items_type"]
+          user_id: string
+        }[]
       }
       update_item: {
         Args: {
+          p_category_id: string
+          p_content: string
+          p_description: string
           p_id: string
-          p_title?: string
-          p_content?: string
-          p_description?: string
-          p_category?: string
-          p_tags?: string[]
-          p_is_deprecated?: boolean
+          p_is_deprecated: boolean
+          p_tags: string[]
+          p_title: string
         }
-        Returns: Database["public"]["Tables"]["items"]["Row"]
-      }
-      delete_item: {
-        Args: {
-          p_id: string
-        }
-        Returns: undefined
-      }
-      get_categories: {
-        Args: Record<string, never>
-        Returns: Database["public"]["Tables"]["categories"]["Row"][]
-      }
-      create_category: {
-        Args: {
-          p_name: string
-        }
-        Returns: Database["public"]["Tables"]["categories"]["Row"]
+        Returns: {
+          category_id: string
+          category_name: string
+          content: string
+          created_at: string
+          description: string
+          id: string
+          is_deprecated: boolean
+          tags: string[]
+          title: string
+          type: Database["public"]["Enums"]["items_type"]
+          user_id: string
+        }[]
       }
     }
     Enums: {
@@ -230,6 +273,23 @@ export type Enums<
   ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
 
 export const Constants = {

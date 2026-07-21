@@ -3,24 +3,25 @@ import { X, CheckCircle, AlertCircle, Info, TriangleAlert } from 'lucide-react';
 
 // Button
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'default' | 'outline' | 'ghost' | 'destructive';
+  variant?: 'default' | 'outline' | 'ghost' | 'destructive' | 'secondary';
   size?: 'sm' | 'md' | 'lg' | 'icon';
 }
 
-export const Button: React.FC<ButtonProps> = ({ 
-  className = '', 
-  variant = 'default', 
-  size = 'md', 
-  children, 
-  ...props 
+export const Button: React.FC<ButtonProps> = ({
+  className = '',
+  variant = 'default',
+  size = 'md',
+  children,
+  ...props
 }) => {
   const baseStyles = "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50";
-  
+
   const variants = {
     default: "bg-primary text-primary-foreground hover:bg-primary/90 shadow",
     outline: "border border-border bg-transparent shadow-sm hover:bg-muted hover:text-foreground",
     ghost: "hover:bg-muted hover:text-foreground",
     destructive: "bg-red-900 text-red-100 hover:bg-red-800",
+    secondary: "bg-white/10 text-white hover:bg-white/20",
   };
 
   const sizes = {

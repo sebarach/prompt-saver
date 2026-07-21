@@ -15,7 +15,8 @@ const sampleRow = {
   id: '123e4567-e89b-12d3-a456-426614174000',
   user_id: 'user-1',
   type: 'prompt' as const,
-  category: 'React',
+  category_id: 'cat-uuid-1',
+  category_name: 'React',
   title: 'useEffect cleanup',
   content: 'Always return a cleanup function',
   description: 'Best practice for useEffect',
@@ -41,7 +42,8 @@ describe('itemsService', () => {
       expect(items[0]).toEqual({
         id: sampleRow.id,
         type: 'prompt',
-        category: 'React',
+        categoryId: 'cat-uuid-1',
+        categoryName: 'React',
         title: 'useEffect cleanup',
         content: 'Always return a cleanup function',
         description: 'Best practice for useEffect',
@@ -66,7 +68,7 @@ describe('itemsService', () => {
 
       const result = await itemsService.create({
         type: 'prompt',
-        category: 'React',
+        categoryId: 'cat-uuid-1',
         title: 'useEffect cleanup',
         content: 'Always return a cleanup function',
         description: 'Best practice for useEffect',
@@ -78,7 +80,7 @@ describe('itemsService', () => {
         p_title: 'useEffect cleanup',
         p_content: 'Always return a cleanup function',
         p_description: 'Best practice for useEffect',
-        p_category: 'React',
+        p_category_id: 'cat-uuid-1',
         p_tags: ['react', 'hooks'],
       });
       expect(result.id).toBe(sampleRow.id);
@@ -92,7 +94,7 @@ describe('itemsService', () => {
       await expect(
         itemsService.create({
           type: 'prompt',
-          category: 'React',
+          categoryId: 'cat-uuid-1',
           title: '',
           content: 'x',
           tags: [],
@@ -114,7 +116,7 @@ describe('itemsService', () => {
         p_title: 'Updated title',
         p_content: undefined,
         p_description: undefined,
-        p_category: undefined,
+        p_category_id: undefined,
         p_tags: undefined,
         p_is_deprecated: undefined,
       });

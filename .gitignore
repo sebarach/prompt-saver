@@ -22,3 +22,12 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Supabase
+supabase/
+.env
+
+# Agent / tool config
+.serena/
+.opencode/
+AGENTS.md

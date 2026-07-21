@@ -34,7 +34,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
       item.title.toLowerCase().includes(q) ||
       item.content.toLowerCase().includes(q) ||
       item.tags.some(tag => tag.toLowerCase().includes(q)) ||
-      item.category.toLowerCase().includes(q)
+      item.categoryName.toLowerCase().includes(q)
     ).slice(0, 8);
   }, [items, query, includeDeprecated]);
 
@@ -182,7 +182,7 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({
                       </p>
                       <div className="flex items-center gap-2 mt-1">
                         <span className="text-xs text-muted-foreground/70">
-                          {item.category}
+                          {item.categoryName}
                         </span>
                         {item.tags.length > 0 && (
                           <span className="text-xs text-muted-foreground/50">

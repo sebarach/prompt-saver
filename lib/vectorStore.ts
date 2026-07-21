@@ -48,8 +48,8 @@ function openDB(): Promise<IDBDatabase> {
  * Build the text representation for embedding.
  * Combines title, content, tags, and category for richer semantic signal.
  */
-function buildItemText(item: { title: string; content: string; category: string; tags: string[]; description?: string }): string {
-  const parts = [item.title, item.category, item.content];
+function buildItemText(item: { title: string; content: string; categoryName?: string; tags: string[]; description?: string }): string {
+  const parts = [item.title, item.categoryName ?? '', item.content];
   if (item.description) parts.push(item.description);
   if (item.tags.length > 0) parts.push(item.tags.join(' '));
   return parts.join(' ');
@@ -59,7 +59,7 @@ function buildItemText(item: { title: string; content: string; category: string;
  * Store an embedding for an item. Generates embedding if not provided.
  */
 export async function putEmbedding(
-  item: { id: string; title: string; content: string; category: string; tags: string[]; description?: string },
+  item: { id: string; title: string; content: string; categoryName?: string; tags: string[]; description?: string },
 ): Promise<void> {
   const db = await openDB();
   const text = buildItemText(item);
@@ -145,7 +145,7 @@ export async function semanticSearch(query: string, topK = 10): Promise<SearchRe
  * Returns the number of new embeddings generated.
  */
 export async function syncEmbeddings(
-  items: Array<{ id: string; title: string; content: string; category: string; tags: string[]; description?: string; createdAt: number }>,
+  items: Array<{ id: string; title: string; content: string; categoryName?: string; tags: string[]; description?: string; createdAt: number }>,
 ): Promise<number> {
   const db = await openDB();
 

@@ -15,7 +15,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
   const [copied, setCopied] = useState(false);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
   
-  const isSecret = item.category?.toLowerCase().trim() === 'secrets';
+  const isSecret = item.categoryName?.toLowerCase().trim() === 'secrets';
   const [isContentVisible, setIsContentVisible] = useState(!isSecret);
 
   const handleCopy = (event?: React.MouseEvent<HTMLButtonElement>) => {
@@ -36,7 +36,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
     }
   };
 
-  const catColor = getColorForCategory(item.category || 'General');
+  const catColor = getColorForCategory(item.categoryName || 'general');
 
   // Determine accent color based on category color mapping
   const accentClass = catColor.text;
@@ -58,7 +58,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
               <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
                   <span className={`px-2 py-0.5 rounded-full ${catColor.bg} border ${catColor.border} flex items-center gap-1.5 ${catColor.text}`}>
                       {item.type === 'command' ? <Terminal className="h-3 w-3" /> : item.type === 'snippet' ? <Code2 className="h-3 w-3" /> : <MessageSquare className="h-3 w-3" />}
-                      {item.category || 'General'}
+                      {item.categoryName || 'general'}
                   </span>
                   <span className="w-1 h-1 rounded-full bg-zinc-700" />
                   <span>{new Date(item.createdAt).toLocaleDateString()}</span>
@@ -168,7 +168,7 @@ export const ItemCard: React.FC<ItemCardProps> = ({ item, onDelete, onEdit, onCo
                     {item.type === 'command' ? 'Comando CLI' : item.type === 'snippet' ? 'Snippet Código' : 'Prompt AI'}
                   </span>
                   <span className="h-1 w-1 rounded-full bg-white/30" />
-                  <span className="uppercase tracking-wide text-white/70 text-[11px]">{item.category || 'General'}</span>
+                  <span className="uppercase tracking-wide text-white/70 text-[11px]">{item.categoryName || 'general'}</span>
                   <span className="h-1 w-1 rounded-full bg-white/30" />
                   <span>{new Date(item.createdAt).toLocaleString()}</span>
                 </div>

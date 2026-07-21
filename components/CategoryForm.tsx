@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Input, Modal } from './ui';
 import { Layers, Palette } from 'lucide-react';
-import { CATEGORY_COLORS, getColorForCategory } from '../lib/colors';
+import { CATEGORY_COLORS } from '../lib/colors';
 
 interface CategoryFormProps {
   isOpen: boolean;
@@ -39,7 +39,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ isOpen, onClose, onS
 
         <div className="space-y-2">
           <label className="text-sm font-medium text-muted-foreground">Nombre de la Categoría</label>
-          <Input 
+          <Input
             placeholder="Ej: Kubernetes, Rust, Design Patterns..."
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -48,7 +48,7 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ isOpen, onClose, onS
             className="bg-black/20 border-white/10 focus:border-indigo-500/50"
           />
         </div>
-        
+
         <div className="space-y-3">
           <label className="text-sm font-medium text-muted-foreground flex items-center gap-2">
             <Palette className="h-4 w-4" /> Personalizar Color
@@ -64,8 +64,8 @@ export const CategoryForm: React.FC<CategoryFormProps> = ({ isOpen, onClose, onS
                   onClick={() => setSelectedColor(key)}
                   title={key}
                   className={`h-10 w-full rounded-lg border transition-all flex items-center justify-center ${
-                    isSelected 
-                      ? `${colors.border} ${colors.bg} ring-2 ${colors.ring}` 
+                    isSelected
+                      ? `${colors.border} ${colors.bg} ring-2 ${colors.ring}`
                       : 'border-white/5 bg-white/5 hover:border-white/20'
                   }`}
                 >

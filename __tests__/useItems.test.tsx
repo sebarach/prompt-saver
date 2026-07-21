@@ -22,7 +22,8 @@ vi.mock('../services/items.service', () => ({
 const sampleItem: Item = {
   id: '123',
   type: 'prompt',
-  category: 'React',
+  categoryId: 'cat-1',
+  categoryName: 'React',
   title: 'Test',
   content: 'Content',
   description: 'Desc',
@@ -88,7 +89,7 @@ describe('useItems hooks', () => {
       // Trigger mutation
       await result.current.create.mutateAsync({
         type: 'prompt',
-        category: 'React',
+        categoryId: 'cat-1',
         title: 'New',
         content: 'New content',
         tags: [],
