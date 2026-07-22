@@ -1,4 +1,4 @@
-const CACHE_NAME = 'prompt-vault-v1';
+const CACHE_NAME = 'prompt-vault-v2';
 const PRECACHE_URLS = [
   './',
   './index.html',
