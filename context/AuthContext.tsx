@@ -38,11 +38,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     initSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       if (mounted) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+
+        // Seed default categories for new/existing users who have none yet
+        if (session?.user) {
+          supabase.rpc('seed_default_categories').then(({ error }) => {
+            if (error) console.error('Failed to seed default categories:', error.message);
+          });
+        }
       }
     });
 

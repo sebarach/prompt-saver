@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import type { Item, ItemType, Category } from '../types';
 import { Button, Input, Textarea, Modal } from './ui';
 import { Terminal, MessageSquare, X, Check, Code2 } from 'lucide-react';
 import { getColorForCategory } from '../lib/colors';
 import { CategoryCombobox } from './CategoryCombobox';
+
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface ItemFormProps {
   isOpen: boolean;
@@ -32,10 +34,16 @@ export const ItemForm: React.FC<ItemFormProps> = ({
   const [tags, setTags] = useState<string[]>([]);
   const [isDeprecated, setIsDeprecated] = useState<boolean>(false);
 
+  // Only categories with a valid UUID id are usable for create/update
+  const validCategories = useMemo(
+    () => categories.filter((c) => UUID_RE.test(c.id)),
+    [categories],
+  );
+
   useEffect(() => {
     if (initialData) {
       setType(initialData.type);
-      setCategoryId(initialData.categoryId);
+      setCategoryId(UUID_RE.test(initialData.categoryId) ? initialData.categoryId : '');
       setCategoryName(initialData.categoryName);
       setTitle(initialData.title);
       setContent(initialData.content);
@@ -49,8 +57,8 @@ export const ItemForm: React.FC<ItemFormProps> = ({
 
   const resetForm = () => {
     setType('prompt');
-    setCategoryId(categories[0]?.id ?? '');
-    setCategoryName(categories[0]?.name ?? 'general');
+    setCategoryId(validCategories[0]?.id ?? '');
+    setCategoryName(validCategories[0]?.name ?? 'general');
     setTitle('');
     setContent('');
     setDescription('');
@@ -75,6 +83,9 @@ export const ItemForm: React.FC<ItemFormProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!UUID_RE.test(categoryId)) {
+      return;
+    }
     onSave({
       type,
       categoryId,
@@ -127,7 +138,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({
 
         <div className="space-y-1.5">
           <label className="text-sm font-medium text-muted-foreground">Contexto / Categoría</label>
-          {categories.length > 0 && (
+          {validCategories.length > 0 && (
             <CategoryCombobox
               value={categoryId}
               valueLabel={categoryName}
@@ -135,11 +146,11 @@ export const ItemForm: React.FC<ItemFormProps> = ({
                 setCategoryId(id);
                 setCategoryName(name);
               }}
-              categories={categories}
+              categories={validCategories}
               onCreateCategory={onCreateCategory}
             />
           )}
-          {categories.length === 0 && (
+          {validCategories.length === 0 && (
             <p className="text-xs text-muted-foreground">
               Primero crea una categoría desde la barra lateral.
             </p>
@@ -249,6 +260,7 @@ export const ItemForm: React.FC<ItemFormProps> = ({
           </Button>
           <Button
             type="submit"
+            disabled={!UUID_RE.test(categoryId)}
             className={
               type === 'command'
                 ? 'bg-emerald-600 hover:bg-emerald-700 w-32'

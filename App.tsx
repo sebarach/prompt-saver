@@ -17,9 +17,6 @@ const ItemForm = lazy(() => import('./components/ItemForm').then(m => ({ default
 const CategoryForm = lazy(() => import('./components/CategoryForm').then(m => ({ default: m.CategoryForm })));
 const CommandPalette = lazy(() => import('./components/CommandPalette').then(m => ({ default: m.CommandPalette })));
 
-// Default categories — always visible even if not in DB
-const DEFAULT_CATEGORIES = ['General', 'Azure', 'AWS', 'React', 'NPM', 'Docker', 'Git'];
-
 // Fallback spinner for lazy-loaded components
 const LazySpinner = () => (
   <div className="flex items-center justify-center p-8">
@@ -40,15 +37,15 @@ const DashboardContent = () => {
   const deleteItem = useDeleteItem();
   const createCategory = useCreateCategory();
 
-  // Merge default + DB + item categories (preserves legacy behavior from useData)
-  // Build a deduplicated Category[] (id = name for default/legacy entries without an id).
+  // Merge DB + item categories. Only real DB categories (with UUIDs) are included.
+  // Default categories are seeded into the DB on registration, so we no longer
+  // fabricate fake IDs from names.
   const categories = useMemo<Category[]>(() => {
     const byName = new Map<string, Category>();
     const add = (name: string, id?: string) => {
       const key = name.toLowerCase();
-      if (!byName.has(key)) byName.set(key, { id: id ?? name, name });
+      if (!byName.has(key)) byName.set(key, { id: id ?? '', name });
     };
-    DEFAULT_CATEGORIES.forEach((name) => add(name));
     dbCategories.forEach((c) => add(c.name, c.id));
     items.forEach((i) => add(i.categoryName || 'General'));
     return Array.from(byName.values());
